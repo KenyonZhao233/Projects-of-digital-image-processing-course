@@ -92,8 +92,15 @@ imshow(im,[]);
 method(im,handles);
 
 function method(im,handles)
+    cla(handles.axesFinal);
+    cla(handles.axesH);
+    cla(handles.axesV);
     %% 1.图像二值化并显示水平与垂直方向像素和图像
-    imGray = rgb2gray(im);
+    if(length(im(1,1,:))==3)
+        imGray = rgb2gray(im);
+    else
+        imGray = im;
+    end
     imBin = imbinarize(imGray);
     [sa, sb] = size(imBin);
     axes(handles.axesV);
@@ -280,7 +287,6 @@ function method(im,handles)
         end 
         i = i + 1;
     end
-
 % --- Executes on button press in checkbox1.
 function checkbox1_Callback(hObject, eventdata, handles)
     im = getimage(handles.axesImage);
