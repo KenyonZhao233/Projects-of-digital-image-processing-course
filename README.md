@@ -1,4 +1,4 @@
-# Project of digital image processing course
+# Projects of digital image processing course
 In 2020, I am studying digital image processing. These are some small projects that I did. 
 
 
