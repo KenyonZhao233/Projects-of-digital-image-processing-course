@@ -7,8 +7,10 @@
 链接：https://pan.baidu.com/s/1DCwv6aw42PTHv2y0QDlXNA 
 提取码：cut1
 
-
+(目前Baseline程序仅针对吉他谱)
 
 TODO LIST：
 
 Baseline程序框架解释
+
+支持更多种乐器的乐谱
