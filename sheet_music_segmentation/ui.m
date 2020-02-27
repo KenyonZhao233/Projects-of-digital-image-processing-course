@@ -86,7 +86,14 @@ function btnInput_Callback(hObject, eventdata, handles)
 {  '*.jpg;*.tif;*.png;*.gif','All Image Files';...
    '*.*','All Files' },'mytitle',...
    '001_01_01.jpg');
-im = imread([pathname, '\', filename]);
+% png读取，imread比较特殊
+% https://blog.csdn.net/daniu2007/article/details/83650294
+if endsWith(filename,'.png')
+    [X,map] = imread([pathname, '\', filename]);
+    im= ind2gray(X,map);
+else
+    im = imread([pathname, '\', filename]);
+end
 axes(handles.axesImage);
 imshow(im,[]);
 method(im,handles);
@@ -120,7 +127,7 @@ function method(im,handles)
 
     %% 3.水平方向切割
     minh = min(h);
-    res = find(h == min(h));
+    res = find(h <= min(h)+10);
     diffRes = res(2:length(res))-res(1:length(res)-1);
     lineWidth = min(diffRes);
     diffRes = diffRes(find(diffRes ~= lineWidth));
@@ -174,7 +181,9 @@ function method(im,handles)
         localArea = imBin(heLine(i*4-3):heLine(i*4),1:sb);
         localV = sum(localArea,1);
         localV = find(localV == 0);
-        temp(i, 1) = localV(1);
+        if(~isempty(localV))
+            temp(i, 1) = localV(1);
+        end
         n = 2;
         % 过滤
         for j = 2:length(localV)
@@ -266,7 +275,7 @@ function method(im,handles)
 
     % 简谱与歌词区域
     hold on;
-    i = 1;
+    i = 2;
     while i <= length(sepAreaFinal) && sepAreaSign(i) == 0
             i = i + 1;
     end
@@ -287,6 +296,7 @@ function method(im,handles)
         end 
         i = i + 1;
     end
+    
 % --- Executes on button press in checkbox1.
 function checkbox1_Callback(hObject, eventdata, handles)
     im = getimage(handles.axesImage);
