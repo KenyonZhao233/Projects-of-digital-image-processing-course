@@ -24,7 +24,7 @@ https://projects.ics.forth.gr/cvrl/fire
 
  https://www5.cs.fau.de/research/data/fundus-images
 
-### 7.Messidor【with groud truth】
+### 7.Messidor
 
  http://www.adcis.net/en/third-party/messidor
 
