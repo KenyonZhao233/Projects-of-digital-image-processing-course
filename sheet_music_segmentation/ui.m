@@ -88,9 +88,20 @@ function btnInput_Callback(hObject, eventdata, handles)
    '001_01_01.jpg');
 % png读取，imread比较特殊
 % https://blog.csdn.net/daniu2007/article/details/83650294
+
+% 防止空字符串报错bug
+if filename == 0
+    return
+end
+
 if endsWith(filename,'.png')
     [X,map] = imread([pathname, '\', filename]);
-    im= ind2gray(X,map);
+    % 防止读取32位bug
+    if isempty(map)
+        im = rgb2gray(X);
+    else
+        im= ind2rgb(X,map);
+    end
 else
     im = imread([pathname, '\', filename]);
 end
@@ -108,7 +119,12 @@ function method(im,handles)
     else
         imGray = im;
     end
-    imBin = imbinarize(imGray);
+    % 加入去除水印的设置
+    imBin = imbinarize(imGray,'adaptive','ForegroundPolarity','dark','Sensitivity',0.4);
+    se = strel('line',1,0);
+    imBin = imopen(imBin,se);
+    
+    
     [sa, sb] = size(imBin);
     axes(handles.axesV);
     v = sum(imBin,1);
@@ -117,17 +133,33 @@ function method(im,handles)
     h = sum(imBin,2);
     plot(h);
 
-    %% 2.垂直方向切割
-    [~,left]=min(v);
-    right = length(v);
+
+    %% 2.水平方向切割
+    minh = min(h);
+    res = find(h <= min(h)+10);
+    
+    %% 3.垂直方向切割
+    
+    % 此处修正曲谱抬头内容过多的问题
+    % 这里好像有bug
+    
+    axes(handles.axesV);
+    if isempty(res)
+       return 
+    end
+    v = sum(imBin(res(1):length(v),:),1);
+    plot(v);
     maxv = max(v);
+    [~,left]=max(v);
+    while v(left) == maxv
+       left = left + 1; 
+    end
+    right = length(v);
     while v(right) == maxv
        right = right - 1; 
     end
-
-    %% 3.水平方向切割
-    minh = min(h);
-    res = find(h <= min(h)+10);
+    
+    %% 2.水平方向切割续
     diffRes = res(2:length(res))-res(1:length(res)-1);
     lineWidth = min(diffRes);
     diffRes = diffRes(find(diffRes ~= lineWidth));
@@ -160,8 +192,8 @@ function method(im,handles)
 
     % 和弦图水平
     heLine = [];
-    for i = 1:length(areaLine)/2
-        localArea = h(areaLine(i*2-1)-4*lineSpace:areaLine(i*2-1)-lineSpace*0.5);
+    for i = 1:floor(length(areaLine)/2)
+        localArea = h(floor(areaLine(i*2-1)-4*lineSpace):floor(areaLine(i*2-1)-lineSpace*0.5));
         localSearch = min(localArea);
         lines = find(localArea<=localSearch*1.1);
         lines = lines + areaLine(i*2-1)-4*lineSpace;
@@ -214,7 +246,7 @@ function method(im,handles)
         end
     end
 
-    if length(sepArea) > 0
+    if ~isempty(sepArea)
         sepAreaFinal = [sepArea(1)];
         sepAreaSign = [hnew(sepArea(1))==maxh];
         for i = 2 : length(sepArea)
@@ -229,7 +261,7 @@ function method(im,handles)
     %% 4.分割结果绘制
     % 原图
     axes(handles.axesFinal);
-    imshow(im,[]);
+    imshow(imBin,[]);
     % 垂直方向切割
     % line([left, left],[0, sa], 'color', 'r');
     % line([right, right],[0, sa], 'color', 'r');
@@ -274,6 +306,7 @@ function method(im,handles)
     end
 
     % 简谱与歌词区域
+    % 未来需要大型修改
     hold on;
     i = 2;
     while i <= length(sepAreaFinal) && sepAreaSign(i) == 0
@@ -296,7 +329,7 @@ function method(im,handles)
         end 
         i = i + 1;
     end
-    
+
 % --- Executes on button press in checkbox1.
 function checkbox1_Callback(hObject, eventdata, handles)
     im = getimage(handles.axesImage);
