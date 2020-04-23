@@ -142,18 +142,24 @@ function method(im,handles)
     
     % 此处修正曲谱抬头内容过多的问题
     % 这里好像有bug
-    
+    % ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+    % 因为有部分曲谱最左边那个黑线会没有，所以这样修改，但是这样似乎
+    % 引发更多的bug，保险可以使用之前版本的代码
+    % ！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
     axes(handles.axesV);
     if isempty(res)
        return 
     end
     v = sum(imBin(res(1):length(v),:),1);
     plot(v);
+    
     maxv = max(v);
     [~,left]=max(v);
     while v(left) == maxv
        left = left + 1; 
     end
+    % 之前代码为 [~,left]=min(v);
+    
     right = length(v);
     while v(right) == maxv
        right = right - 1; 
